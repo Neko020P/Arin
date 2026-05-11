@@ -73,6 +73,22 @@ export default function NavbarClient({ profile }: { profile: Profile }) {
           </Link>
 
           <Link
+            href="/dashboard/commissions"
+            onClick={() => setOpen(false)}
+            className="block px-4 py-2 text-sm text-gray-600 hover:bg-gray-50"
+          >
+            Commissions
+          </Link>
+          
+          <Link
+            href="/dashboard/characters"
+            onClick={() => setOpen(false)}
+            className="block px-4 py-2 text-sm text-gray-600 hover:bg-gray-50"
+          >
+            Characters
+          </Link>
+
+          <Link
             href="/dashboard"
             onClick={() => setOpen(false)}
             className="block px-4 py-2 text-sm text-gray-600 hover:bg-gray-50"
