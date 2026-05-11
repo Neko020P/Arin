@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import NavbarClient from './NavbarClient'
+import ThemeToggle from './ThemeToggle'
 
 export default async function Navbar() {
   const supabase = await createClient()
@@ -17,7 +18,7 @@ export default async function Navbar() {
   }
 
   return (
-    <nav className="border-b px-4 py-3 sticky top-0 bg-white/80 backdrop-blur-md z-50">
+    <nav className="border-b px-4 py-3 sticky top-0 bg-white/80 dark:bg-gray-950/80 backdrop-blur-md z-50">
       <div className="max-w-5xl mx-auto flex items-center justify-between">
 
         {/* Logo */}
@@ -27,6 +28,8 @@ export default async function Navbar() {
 
         {/* Right side */}
         <div className="flex items-center gap-3">
+          <ThemeToggle />
+
           {user && profile ? (
             <>
               <Link
@@ -41,7 +44,7 @@ export default async function Navbar() {
             </>
           ) : (
             <>
-              <Link href="/login" className="text-sm text-gray-500 hover:text-gray-800">
+              <Link href="/login" className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-100">
                 เข้าสู่ระบบ
               </Link>
               <Link
