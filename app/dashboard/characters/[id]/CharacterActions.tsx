@@ -58,6 +58,14 @@ export default function CharacterActions({
       >
         ✏️ แก้ไข Character
       </Link>
+      
+      <Link
+        href={`/character/${characterId}`}
+        target="_blank"
+        className="border rounded-lg py-2.5 text-sm text-center hover:bg-gray-50 transition-colors"
+      >
+        🌐 ดู Public Page
+      </Link>
 
       <button
         onClick={handleDelete}

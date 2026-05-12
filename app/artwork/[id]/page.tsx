@@ -65,7 +65,7 @@ export default async function ArtworkDetailPage({
         .select('id')
         .eq('user_id', user.id)
         .single() : { data: null }
-    
+
     console.log('myProfile:', myProfile?.id)
     console.log('artist.id:', artist.id)
     console.log('isOwner:', myProfile?.id === artist.id)
@@ -194,8 +194,9 @@ export default async function ArtworkDetailPage({
                                         if (!c) return null
                                         const owner = Array.isArray(c.profiles) ? c.profiles[0] : c.profiles
                                         return (
-                                            <div
+                                            <Link
                                                 key={c.id}
+                                                href={`/character/${c.id}`}
                                                 className="flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:border-purple-200 hover:bg-purple-50 transition-colors"
                                             >
                                                 {c.ref_sheet_url ? (
@@ -215,7 +216,7 @@ export default async function ArtworkDetailPage({
                                                         <p className="text-xs text-gray-400">@{owner.username}</p>
                                                     )}
                                                 </div>
-                                            </div>
+                                            </Link>
                                         )
                                     })}
                                 </div>
