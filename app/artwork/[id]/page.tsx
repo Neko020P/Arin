@@ -47,6 +47,22 @@ export default async function ArtworkDetailPage({
         .order('created_at', { ascending: false })
         .limit(6)
 
+    // ดึง characters ที่อยู่ใน artwork นี้
+    const { data: linkedCharacters } = await supabase
+        .from('artwork_characters')
+        .select('characters(id, name, ref_sheet_url, owner_id, profiles(username))')
+        .eq('artwork_id', id)
+
+    // เช็คว่า user คนนี้เป็นเจ้าของ artwork ไหม
+    const { data: { user } } = await supabase.auth.getUser()
+    const { data: myProfile } = user ? await supabase
+        .from('profiles')
+        .select('id')
+        .eq('user_id', user.id)
+        .single() : { data: null }
+
+    const isOwner = myProfile?.id === artist.id
+
     return (
         <main className="min-h-screen py-10 px-4">
             <div className="max-w-5xl mx-auto">
@@ -61,7 +77,6 @@ export default async function ArtworkDetailPage({
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
 
-                    {/* รูปภาพ */}
                     {/* รูปภาพ */}
                     <div className="relative w-full rounded-2xl overflow-hidden bg-gray-100">
                         {artwork.is_nsfw ? (
@@ -106,15 +121,23 @@ export default async function ArtworkDetailPage({
                                 <p className="text-xs text-gray-400">@{artist.username}</p>
                             </div>
                         </Link>
-
-                        {/* Title */}
+                        
+                        {/* Title + Edit */}
                         <div>
-                            <h1 className="text-2xl font-medium leading-snug">{artwork.title}</h1>
+                            <div className="flex items-start justify-between gap-3">
+                                <h1 className="text-2xl font-medium leading-snug">{artwork.title}</h1>
+                                {isOwner && (
+                                    <Link
+                                        href={`/dashboard/artwork/${artwork.id}/edit`}
+                                        className="text-xs border px-3 py-1.5 rounded-full hover:bg-gray-50 shrink-0 transition-colors"
+                                    >
+                                        ✏️ แก้ไข
+                                    </Link>
+                                )}
+                            </div>
                             <p className="text-xs text-gray-400 mt-1">
                                 {new Date(artwork.created_at).toLocaleDateString('th-TH', {
-                                    year: 'numeric',
-                                    month: 'long',
-                                    day: 'numeric',
+                                    year: 'numeric', month: 'long', day: 'numeric',
                                 })}
                             </p>
                         </div>
@@ -146,6 +169,46 @@ export default async function ArtworkDetailPage({
                                             #{tag}
                                         </span>
                                     ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Characters */}
+                        {linkedCharacters && linkedCharacters.length > 0 && (
+                            <div>
+                                <h2 className="text-xs font-medium text-gray-400 uppercase tracking-wider mb-2">
+                                    Characters
+                                </h2>
+                                <div className="flex flex-col gap-2">
+                                    {linkedCharacters.map((row: any) => {
+                                        const c = row.characters
+                                        if (!c) return null
+                                        const owner = Array.isArray(c.profiles) ? c.profiles[0] : c.profiles
+                                        return (
+                                            <div
+                                                key={c.id}
+                                                className="flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:border-purple-200 hover:bg-purple-50 transition-colors"
+                                            >
+                                                {c.ref_sheet_url ? (
+                                                    <img
+                                                        src={c.ref_sheet_url}
+                                                        alt={c.name}
+                                                        className="w-10 h-10 rounded-lg object-cover shrink-0"
+                                                    />
+                                                ) : (
+                                                    <div className="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center text-lg shrink-0">
+                                                        🎨
+                                                    </div>
+                                                )}
+                                                <div>
+                                                    <p className="text-sm font-medium">{c.name}</p>
+                                                    {owner?.username && (
+                                                        <p className="text-xs text-gray-400">@{owner.username}</p>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        )
+                                    })}
                                 </div>
                             </div>
                         )}
