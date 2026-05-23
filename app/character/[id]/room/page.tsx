@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import RoomClient from './RoomClient'
+import CopyRoomLink from './CopyRoomLink'
 
 export default async function CharacterRoomPage({
   params,
@@ -58,7 +59,7 @@ export default async function CharacterRoomPage({
         <span className="text-sm text-white/70 font-medium">
           {character.name}'s Room
         </span>
-        <div className="w-20" />
+        <CopyRoomLink characterId={id} />
       </div>
 
       <RoomClient

@@ -86,7 +86,6 @@ export default function IsoCharacter({
   const mood = getMood(stats)
   const config = PERSONALITY_CONFIG[personality] ?? PERSONALITY_CONFIG['friendly']
 
-  // รับ pendingAction → เดินไป zone
   useEffect(() => {
     if (!pendingAction) return
 

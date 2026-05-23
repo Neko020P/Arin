@@ -21,7 +21,7 @@ const TIER_DURATION: Record<string, number> = {
 }
 
 const TIER_BUBBLE: Record<string, string[]> = {
-  stranger: ['...', 'สวัสดี', 'แวะมาดูหน่อย'],
+  stranger: ['...', 'Hello!', 'แวะมาดูหน่อย'],
   friend: ['มาเยี่ยมแล้ว!', 'คิดถึงนะ', 'เป็นยังไงบ้าง?'],
   rival: ['แค่แวะมาดู', 'ไม่ได้แพ้นะ', 'เจอกันใหม่'],
 }
