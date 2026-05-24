@@ -124,7 +124,7 @@ export default function EditProfilePage() {
   return (
     <main className="min-h-screen py-12 px-4">
       <div className="max-w-lg mx-auto">
-        <h1 className="text-2xl font-medium mb-8">แก้ไขโปรไฟล์</h1>
+        <h1 className="text-2xl font-medium mb-8">Edit Profile</h1>
 
         <form onSubmit={handleSave} className="flex flex-col gap-6">
 

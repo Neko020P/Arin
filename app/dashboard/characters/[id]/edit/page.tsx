@@ -94,15 +94,15 @@ export default function EditCharacterPage() {
       <div className="max-w-lg mx-auto">
 
         <div className="mb-8">
-          <h1 className="text-2xl font-medium">แก้ไข Character</h1>
-          <p className="text-sm text-gray-400 mt-1">แก้ไข lore และรายละเอียด</p>
+          <h1 className="text-2xl font-medium">Edit Character</h1>
+          <p className="text-sm text-gray-400 mt-1">Edit lore and details</p>
         </div>
 
         <form onSubmit={handleSave} className="flex flex-col gap-5">
 
           {/* Name */}
           <div className="flex flex-col gap-1">
-            <label className="text-sm font-medium">ชื่อตัวละคร <span className="text-red-400">*</span></label>
+            <label className="text-sm font-medium">Character Name <span className="text-red-400">*</span></label>
             <input
               type="text"
               required

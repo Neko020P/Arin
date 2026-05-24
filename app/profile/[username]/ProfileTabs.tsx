@@ -35,13 +35,27 @@ type Props = {
     portfolioItems: PortfolioItem[]
     isOwner: boolean
     artistId: string
+    tos: string | null
 }
 
-type Tab = 'art' | 'commissions' | 'portfolio'
+type Tab = 'art' | 'commissions' | 'portfolio' | 'tos'
 
-export default function ProfileTabs({ artworks, listings, portfolioItems: initialItems, isOwner, artistId }: Props) {
+export default function ProfileTabs({ artworks, listings, portfolioItems: initialItems, isOwner, artistId, tos: initialTos }: Props) {
     const [tab, setTab] = useState<Tab>('art')
     const [portfolioItems, setPortfolioItems] = useState(initialItems)
+    const [tos, setTos] = useState(initialTos)
+    const [editingTos, setEditingTos] = useState(false)
+    const [tosInput, setTosInput] = useState(initialTos ?? '')
+    const [savingTos, setSavingTos] = useState(false)
+
+    async function handleSaveTos() {
+        setSavingTos(true)
+        await supabase.from('profiles').update({ tos: tosInput || null }).eq('id', artistId)
+        setTos(tosInput || null)
+        setEditingTos(false)
+        setSavingTos(false)
+    }
+    const [lightbox, setLightbox] = useState<{ id: string; title: string; image_url: string; isPortfolio?: boolean } | null>(null)
     const [uploading, setUploading] = useState(false)
     const fileRef = useRef<HTMLInputElement>(null)
     const supabase = createClient()
@@ -50,6 +64,7 @@ export default function ProfileTabs({ artworks, listings, portfolioItems: initia
         { id: 'art' as Tab, label: 'Art' },
         { id: 'commissions' as Tab, label: 'Commissions' },
         { id: 'portfolio' as Tab, label: 'Portfolio' },
+        { id: 'tos' as Tab, label: 'TOS' },
     ]
 
     async function handlePortfolioUpload(file: File) {
@@ -77,6 +92,7 @@ export default function ProfileTabs({ artworks, listings, portfolioItems: initia
     async function handleDeletePortfolio(id: string) {
         await supabase.from('portfolio_items').delete().eq('id', id)
         setPortfolioItems(prev => prev.filter(p => p.id !== id))
+        if (lightbox?.id === id) setLightbox(null)
     }
 
     function ArtworkGrid({ items }: { items: { id: string; title: string; image_url: string; is_nsfw?: boolean }[] }) {
@@ -88,8 +104,9 @@ export default function ProfileTabs({ artworks, listings, portfolioItems: initia
         return (
             <div className="columns-2 md:columns-3 gap-3 space-y-3">
                 {items.map(item => (
-                    <Link key={item.id} href={`/artwork/${item.id}`}
-                        className="group block break-inside-avoid rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-900 relative">
+                    <div key={item.id}
+                        className="group block break-inside-avoid rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-900 relative cursor-pointer"
+                        onClick={() => !item.is_nsfw && setLightbox({ id: item.id, title: item.title, image_url: item.image_url })}>
                         <img src={item.image_url} alt={item.title}
                             className="w-full object-cover transition-transform duration-300 group-hover:scale-105"
                             loading="lazy" />
@@ -100,8 +117,13 @@ export default function ProfileTabs({ artworks, listings, portfolioItems: initia
                         )}
                         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-3">
                             <p className="text-white text-xs font-medium truncate">{item.title}</p>
+                            <Link href={`/artwork/${item.id}`}
+                                onClick={e => e.stopPropagation()}
+                                className="text-white/70 text-xs hover:text-white mt-0.5 w-fit">
+                                View page →
+                            </Link>
                         </div>
-                    </Link>
+                    </div>
                 ))}
             </div>
         )
@@ -206,14 +228,17 @@ export default function ProfileTabs({ artworks, listings, portfolioItems: initia
                     ) : (
                         <div className="columns-2 md:columns-3 gap-3 space-y-3">
                             {portfolioItems.map(item => (
-                                <div key={item.id} className="group relative break-inside-avoid rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-900">
+                                <div key={item.id}
+                                    className="group relative break-inside-avoid rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-900 cursor-pointer"
+                                    onClick={() => setLightbox({ ...item, isPortfolio: true })}>
                                     <img src={item.image_url} alt={item.title}
-                                        className="w-full object-cover" loading="lazy" />
+                                        className="w-full object-cover transition-transform duration-300 group-hover:scale-105" loading="lazy" />
                                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-3">
                                         <p className="text-white text-xs font-medium truncate">{item.title}</p>
                                     </div>
                                     {isOwner && (
-                                        <button onClick={() => handleDeletePortfolio(item.id)}
+                                        <button
+                                            onClick={e => { e.stopPropagation(); handleDeletePortfolio(item.id) }}
                                             className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 bg-red-500/80 text-white text-xs px-2 py-1 rounded-full hover:bg-red-600 transition-opacity">
                                             ✕
                                         </button>
@@ -222,6 +247,85 @@ export default function ProfileTabs({ artworks, listings, portfolioItems: initia
                             ))}
                         </div>
                     )}
+                </div>
+            )}
+
+            {/* TOS Tab */}
+            {tab === 'tos' && (
+                <div>
+                    <div className="flex items-center justify-between mb-4">
+                        <span />
+                        {isOwner && !editingTos && (
+                            <button onClick={() => { setTosInput(tos ?? ''); setEditingTos(true) }}
+                                className="text-xs border px-3 py-1.5 rounded-full hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
+                                ✏️ Edit TOS
+                            </button>
+                        )}
+                    </div>
+                    {editingTos ? (
+                        <div className="flex flex-col gap-3">
+                            <textarea
+                                value={tosInput}
+                                onChange={e => setTosInput(e.target.value)}
+                                rows={10}
+                                className="w-full text-sm rounded-xl border border-gray-200 dark:border-white/10 bg-transparent p-4 focus:outline-none focus:border-purple-400 resize-none"
+                                placeholder="Write your terms of service..."
+                            />
+                            <div className="flex gap-2 justify-end">
+                                <button onClick={() => setEditingTos(false)}
+                                    className="text-xs px-4 py-1.5 rounded-full border hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
+                                    Cancel
+                                </button>
+                                <button onClick={handleSaveTos} disabled={savingTos}
+                                    className="text-xs bg-purple-600 text-white px-4 py-1.5 rounded-full hover:bg-purple-700 transition-colors disabled:opacity-50">
+                                    {savingTos ? 'Saving...' : 'Save'}
+                                </button>
+                            </div>
+                        </div>
+                    ) : tos ? (
+                        <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed whitespace-pre-line">{tos}</p>
+                    ) : (
+                        <div className="border-2 border-dashed border-gray-100 dark:border-white/10 rounded-2xl py-20 text-center">
+                            <p className="text-gray-400 text-sm">No terms of service yet</p>
+                        </div>
+                    )}
+                </div>
+            )}
+
+            {/* Lightbox */}
+            {lightbox && (
+                <div
+                    className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4"
+                    onClick={() => setLightbox(null)}>
+                    <div className="relative max-w-4xl w-full" onClick={e => e.stopPropagation()}>
+                        <img
+                            src={lightbox.image_url}
+                            alt={lightbox.title}
+                            className="w-full max-h-[85vh] object-contain rounded-xl" />
+                        <div className="flex items-center justify-between mt-3 px-1">
+                            <p className="text-white text-sm font-medium">{lightbox.title}</p>
+                            <div className="flex gap-2">
+                                {lightbox.isPortfolio && isOwner && (
+                                    <button
+                                        onClick={() => handleDeletePortfolio(lightbox.id)}
+                                        className="text-xs bg-red-500/80 text-white px-3 py-1.5 rounded-full hover:bg-red-600 transition-colors">
+                                        Delete
+                                    </button>
+                                )}
+                                {!lightbox.isPortfolio && (
+                                    <Link href={`/artwork/${lightbox.id}`}
+                                        className="text-xs bg-purple-600/80 text-white px-3 py-1.5 rounded-full hover:bg-purple-700 transition-colors">
+                                        View page →
+                                    </Link>
+                                )}
+                                <button
+                                    onClick={() => setLightbox(null)}
+                                    className="text-xs bg-white/20 text-white px-3 py-1.5 rounded-full hover:bg-white/30 transition-colors">
+                                    Close
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             )}
         </div>

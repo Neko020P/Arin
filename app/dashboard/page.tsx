@@ -167,7 +167,7 @@ export default async function DashboardPage() {
                   href="/profile/edit"
                   className="flex-1 text-center text-xs border rounded-lg py-1.5 hover:bg-gray-50 transition-colors"
                 >
-                  แก้ไขโปรไฟล์
+                  Edit Profile
                 </Link>
                 <Link
                   href={`/profile/${profile.username}`}
