@@ -46,6 +46,14 @@ export default async function ProfilePage({
         .eq('artist_id', profile.id)
         .order('created_at', { ascending: false })
 
+    // query
+    const { data: characters } = await supabase
+        .from('characters')
+        .select('id, name, ref_sheet_url')
+        .eq('owner_id', profile.id)
+        .eq('is_public', true)
+        .order('created_at', { ascending: false })
+
     return (
         <main className="min-h-screen bg-white dark:bg-gray-950">
 
@@ -111,6 +119,7 @@ export default async function ProfilePage({
                     artworks={artworks ?? []}
                     listings={listings ?? []}
                     portfolioItems={portfolioItems ?? []}
+                    characters={characters ?? []}
                     isOwner={isOwner}
                     artistId={profile.id}
                     tos={profile.tos ?? null}

@@ -37,7 +37,7 @@ export default function MoodSpriteUpload({ characterId, currentSprites, onUpdate
         .from('character-parts')
         .getPublicUrl(path)
 
-      const nextSprites = { ...currentSprites, [mood]: publicUrl }
+      const nextSprites = { ...currentSprites, [mood]: publicUrl + '?t=' + Date.now() }
 
       await supabase
         .from('characters')

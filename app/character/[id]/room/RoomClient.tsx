@@ -1,3 +1,4 @@
+//RoomClient.tsx
 'use client'
 import { createClient } from '@/lib/supabase/client'
 import { useEffect, useRef, useState } from 'react'
@@ -39,6 +40,7 @@ type Props = {
     personality: string | null
     ref_sheet_url?: string | null
     room_sprite_url?: string | null
+    room_bg_color?: string | null
   }
   isOwner: boolean
   currentBgUrl: string | null
@@ -75,21 +77,22 @@ export default function RoomClient({
 
   // PERSONALITY badge
   const PERSONALITY_BADGE: Record<string, { label: string; color: string }> = {
-    shy:        { label: 'Shy & quiet',      color: '#a78bfa' },
-    friendly:   { label: 'Friendly & warm',  color: '#34d399' },
-    observant:  { label: 'Calm & observant', color: '#60a5fa' },
-    playful:    { label: 'Energetic & social', color: '#f472b6' },
-    calm:       { label: 'Calm & collected', color: '#94a3b8' },
+    shy: { label: 'Shy & quiet', color: '#a78bfa' },
+    friendly: { label: 'Friendly & warm', color: '#34d399' },
+    observant: { label: 'Calm & observant', color: '#60a5fa' },
+    playful: { label: 'Energetic & social', color: '#f472b6' },
+    calm: { label: 'Calm & collected', color: '#94a3b8' },
   }
   const badge = PERSONALITY_BADGE[personality] ?? PERSONALITY_BADGE['friendly']
 
   // STATS config
   const STATS_CONFIG = [
-    { key: 'hunger' as const,    label: 'Tummy',    icon: '🍞', color: '#fb923c' },
-    { key: 'energy' as const,    label: 'Energy',   icon: '⚡', color: '#facc15' },
-    { key: 'happiness' as const, label: 'Mood',     icon: '🌸', color: '#f472b6' },
-    { key: 'social' as const,    label: 'Social',   icon: '💬', color: '#60a5fa' },
+    { key: 'hunger' as const, label: 'Tummy', icon: '🍞', color: '#fb923c' },
+    { key: 'energy' as const, label: 'Energy', icon: '⚡', color: '#facc15' },
+    { key: 'happiness' as const, label: 'Mood', icon: '🌸', color: '#f472b6' },
+    { key: 'social' as const, label: 'Social', icon: '💬', color: '#60a5fa' },
   ]
+  const [bgColor, setBgColor] = useState(initialCharacter.room_bg_color ?? '#302b63')
 
   useEffect(() => {
     if (!characterId) return
@@ -118,7 +121,7 @@ export default function RoomClient({
               setVisitors(p => p.filter(x => x.characterId !== v.characterId))
               delete visitorTimeoutsRef.current[v.characterId]
               createClient().from('character_visits').delete()
-                .eq('visitor_id', v.characterId).eq('host_id', characterId).then(() => {})
+                .eq('visitor_id', v.characterId).eq('host_id', characterId).then(() => { })
             }, 30 * 1000)
           })
           return [...prev, ...fresh]
@@ -257,6 +260,8 @@ export default function RoomClient({
               characterId={characterId}
               currentBgUrl={currentBgUrl}
               currentSpriteUrl={currentSpriteUrl}
+              currentBgColor={bgColor}
+              onBgColorChange={setBgColor}
             />
             <TransferOwnershipPanel
               characterId={characterId}
@@ -282,6 +287,7 @@ export default function RoomClient({
             onZonesChange={handleZoneMove}
             visitors={visitors}
             onVisitorLeave={handleVisitorLeave}
+            bgColor={bgColor}
           />
         )}
         {tab === 'bonds' && (

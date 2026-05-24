@@ -2,6 +2,7 @@
 import { useState, useRef } from 'react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
+import TosEditor from '@/components/TosEditor'
 
 type Artwork = {
     id: string
@@ -29,18 +30,25 @@ type PortfolioItem = {
     description: string | null
 }
 
+type Character = {
+    id: string
+    name: string
+    ref_sheet_url: string | null
+}
+
 type Props = {
     artworks: Artwork[]
     listings: Listing[]
     portfolioItems: PortfolioItem[]
+    characters: Character[]
     isOwner: boolean
     artistId: string
     tos: string | null
 }
 
-type Tab = 'art' | 'commissions' | 'portfolio' | 'tos'
+type Tab = 'art' | 'commissions' | 'portfolio' | 'characters' | 'tos'
 
-export default function ProfileTabs({ artworks, listings, portfolioItems: initialItems, isOwner, artistId, tos: initialTos }: Props) {
+export default function ProfileTabs({ artworks, listings, portfolioItems: initialItems, characters, isOwner, artistId, tos: initialTos }: Props) {
     const [tab, setTab] = useState<Tab>('art')
     const [portfolioItems, setPortfolioItems] = useState(initialItems)
     const [tos, setTos] = useState(initialTos)
@@ -64,6 +72,7 @@ export default function ProfileTabs({ artworks, listings, portfolioItems: initia
         { id: 'art' as Tab, label: 'Art' },
         { id: 'commissions' as Tab, label: 'Commissions' },
         { id: 'portfolio' as Tab, label: 'Portfolio' },
+        { id: 'characters' as Tab, label: 'Characters' },
         { id: 'tos' as Tab, label: 'TOS' },
     ]
 
@@ -250,6 +259,35 @@ export default function ProfileTabs({ artworks, listings, portfolioItems: initia
                 </div>
             )}
 
+            {/* Characters Tab */}
+            {tab === 'characters' && (
+                <div>
+                    <p className="text-xs text-gray-400 uppercase tracking-widest mb-4">{characters.length} characters</p>
+                    {characters.length === 0 ? (
+                        <div className="border-2 border-dashed border-gray-100 dark:border-white/10 rounded-2xl py-20 text-center">
+                            <p className="text-gray-400 text-sm">No characters yet</p>
+                        </div>
+                    ) : (
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                            {characters.map(c => (
+                                <Link key={c.id} href={`/character/${c.id}`}
+                                    className="group flex items-center gap-3 p-3 rounded-xl border border-gray-100 dark:border-white/10 hover:border-purple-200 dark:hover:border-purple-500/40 hover:bg-purple-50 dark:hover:bg-purple-500/5 transition-colors">
+                                    {c.ref_sheet_url ? (
+                                        <img src={c.ref_sheet_url} alt={c.name}
+                                            className="w-12 h-12 rounded-lg object-cover shrink-0" />
+                                    ) : (
+                                        <div className="w-12 h-12 rounded-lg bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center text-xl shrink-0">
+                                            🎨
+                                        </div>
+                                    )}
+                                    <p className="text-sm font-medium group-hover:text-purple-600 transition-colors truncate">{c.name}</p>
+                                </Link>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            )}
+
             {/* TOS Tab */}
             {tab === 'tos' && (
                 <div>
@@ -264,13 +302,7 @@ export default function ProfileTabs({ artworks, listings, portfolioItems: initia
                     </div>
                     {editingTos ? (
                         <div className="flex flex-col gap-3">
-                            <textarea
-                                value={tosInput}
-                                onChange={e => setTosInput(e.target.value)}
-                                rows={10}
-                                className="w-full text-sm rounded-xl border border-gray-200 dark:border-white/10 bg-transparent p-4 focus:outline-none focus:border-purple-400 resize-none"
-                                placeholder="Write your terms of service..."
-                            />
+                            <TosEditor content={tosInput} onChange={setTosInput} />
                             <div className="flex gap-2 justify-end">
                                 <button onClick={() => setEditingTos(false)}
                                     className="text-xs px-4 py-1.5 rounded-full border hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
@@ -283,7 +315,8 @@ export default function ProfileTabs({ artworks, listings, portfolioItems: initia
                             </div>
                         </div>
                     ) : tos ? (
-                        <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed whitespace-pre-line">{tos}</p>
+                        <div className="prose prose-sm dark:prose-invert max-w-none"
+                            dangerouslySetInnerHTML={{ __html: tos }} />
                     ) : (
                         <div className="border-2 border-dashed border-gray-100 dark:border-white/10 rounded-2xl py-20 text-center">
                             <p className="text-gray-400 text-sm">No terms of service yet</p>
