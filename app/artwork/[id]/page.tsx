@@ -1,8 +1,10 @@
+//app/artwork/[id]/page.tsx
 import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
 import NsfwReveal from '@/components/NsfwReveal'
+import ArtworkImage from '@/components/ArtworkImage'
 
 export default async function ArtworkDetailPage({
     params,
@@ -87,22 +89,11 @@ export default async function ArtworkDetailPage({
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
 
                     {/* รูปภาพ */}
-                    <div className="relative w-full rounded-2xl overflow-hidden bg-gray-100">
-                        {artwork.is_nsfw ? (
-                            <NsfwReveal imageUrl={artwork.image_url} title={artwork.title} />
-                        ) : (
-                            <div className="relative aspect-square">
-                                <Image
-                                    src={artwork.image_url}
-                                    alt={artwork.title}
-                                    fill
-                                    className="object-contain"
-                                    sizes="(max-width: 768px) 100vw, 50vw"
-                                    priority
-                                />
-                            </div>
-                        )}
-                    </div>
+                    <ArtworkImage
+                        imageUrl={artwork.image_url}
+                        title={artwork.title}
+                        isNsfw={artwork.is_nsfw}
+                    />
 
                     {/* รายละเอียด */}
                     <div className="flex flex-col gap-6">
@@ -140,7 +131,7 @@ export default async function ArtworkDetailPage({
                                         href={`/dashboard/artwork/${artwork.id}/edit`}
                                         className="text-xs border px-3 py-1.5 rounded-full hover:bg-gray-50 shrink-0 transition-colors"
                                     >
-                                        ✏️ แก้ไข
+                                        ✏️ Edit
                                     </Link>
                                 )}
                             </div>
@@ -150,19 +141,7 @@ export default async function ArtworkDetailPage({
                                 })}
                             </p>
                         </div>
-
-                        {/* Description */}
-                        {artwork.description && (
-                            <div>
-                                <h2 className="text-xs font-medium text-gray-400 uppercase tracking-wider mb-2">
-                                    คำอธิบาย
-                                </h2>
-                                <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-line">
-                                    {artwork.description}
-                                </p>
-                            </div>
-                        )}
-
+                        
                         {/* Tags */}
                         {artwork.tags?.length > 0 && (
                             <div>
@@ -170,15 +149,27 @@ export default async function ArtworkDetailPage({
                                     Tags
                                 </h2>
                                 <div className="flex flex-wrap gap-2">
-                                    {artwork.tags.map((tag: string) => (
+                                    {artwork.tags.map((tag: string, i: number) => (
                                         <span
-                                            key={tag}
+                                            key={i}
                                             className="text-xs bg-purple-50 text-purple-600 px-3 py-1 rounded-full border border-purple-100"
                                         >
                                             #{tag}
                                         </span>
                                     ))}
                                 </div>
+                            </div>
+                        )}
+
+                        {/* Description */}
+                        {artwork.description && (
+                            <div>
+                                <h2 className="text-xs font-medium text-gray-400 uppercase tracking-wider mb-2">
+                                    Description
+                                </h2>
+                                <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-line">
+                                    {artwork.description}
+                                </p>
                             </div>
                         )}
 
@@ -237,7 +228,7 @@ export default async function ArtworkDetailPage({
                 {related && related.length > 0 && (
                     <div className="mt-16">
                         <h2 className="text-sm font-medium text-gray-400 mb-4">
-                            ผลงานอื่นของ {artist.display_name || artist.username}
+                            Related Artworks by {artist.display_name || artist.username}
                         </h2>
                         <div className="grid grid-cols-3 md:grid-cols-6 gap-2">
                             {related.map(r => (

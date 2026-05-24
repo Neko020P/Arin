@@ -1,3 +1,4 @@
+//RoomCanvas.tsx
 'use client'
 import { useRef, useState } from 'react'
 import type { Stats } from '@/lib/stats'
@@ -40,6 +41,7 @@ type Props = {
   onZonesChange: (id: string, col: number, row: number) => void
   visitors: VisitorData[]
   onVisitorLeave: (characterId: string) => void
+  bgColor: string
 }
 
 export default function RoomCanvas({
@@ -48,6 +50,7 @@ export default function RoomCanvas({
   moodSprites, personality, isOwner, onZonesChange,
   visitors,
   onVisitorLeave,
+  bgColor,
 }: Props) {
   const containerRef = useRef<HTMLDivElement>(null)
   const [lastAction, setLastAction] = useState<string | null>(null)
@@ -97,9 +100,7 @@ export default function RoomCanvas({
         aspectRatio: '16/9',
         overflow: 'hidden',
         borderRadius: 16,
-        background: bgUrl
-          ? undefined
-          : 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)',
+        background: bgUrl ? undefined : (bgColor ?? 'linear-gradient(135deg, #0f0c29, #302b63, #24243e)'),
       }}
     >
       {/* Background */}
@@ -217,7 +218,7 @@ export default function RoomCanvas({
             backdropFilter: 'blur(4px)',
           }}
         >
-          {editMode ? '✅ บันทึก' : '✏️ จัดห้อง'}
+          {editMode ? '✅ Save' : '✏️ Edit room'}
         </button>
       )}
 

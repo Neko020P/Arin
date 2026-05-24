@@ -227,15 +227,16 @@ export default function IsoCharacter({
     >
       <div style={{
         height: '100%',
+        position: 'relative',
         transform: [
           facing === 'left' ? 'scaleX(-1)' : 'scaleX(1)',
           isSitting ? 'scaleY(0.6) translateY(30%)' : '',
         ].join(' '),
         transition: 'transform 0.3s ease',
       }}>
-        {/* Base sprite */}
+        {/* แสดง mood sprite ถ้ามี ไม่งั้นแสดง base sprite */}
         <img
-          src={spriteUrl}
+          src={moodSpriteUrl ?? spriteUrl}
           alt="character"
           onLoad={() => setSpriteLoaded(true)}
           draggable={false}
@@ -249,23 +250,6 @@ export default function IsoCharacter({
             filter: getFilter(mood, stats.energy),
           }}
         />
-        {/* Mood sprite overlay */}
-        {moodSpriteUrl && (
-          <img
-            src={moodSpriteUrl}
-            alt="mood"
-            draggable={false}
-            style={{
-              position: 'absolute',
-              inset: 0,
-              height: '100%',
-              width: 'auto',
-              objectFit: 'contain',
-              imageRendering: 'pixelated',
-              animation: spriteLoaded ? getAnimation() : 'none',
-            }}
-          />
-        )}
       </div>
     </div>
   )

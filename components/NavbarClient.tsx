@@ -61,7 +61,7 @@ export default function NavbarClient({ profile }: { profile: Profile }) {
             onClick={() => setOpen(false)}
             className="block px-4 py-2 text-sm text-gray-600 hover:bg-gray-50"
           >
-            โปรไฟล์ของฉัน
+            View Profile
           </Link>
 
           <Link
@@ -69,7 +69,7 @@ export default function NavbarClient({ profile }: { profile: Profile }) {
             onClick={() => setOpen(false)}
             className="block px-4 py-2 text-sm text-gray-600 hover:bg-gray-50"
           >
-            แก้ไขโปรไฟล์
+            Edit Profile
           </Link>
 
           <Link
@@ -102,7 +102,7 @@ export default function NavbarClient({ profile }: { profile: Profile }) {
                 type="submit"
                 className="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-red-50"
               >
-                ออกจากระบบ
+                Sign Out
               </button>
             </form>
           </div>

@@ -102,7 +102,7 @@ export default async function CharacterDetailPage({
               {character.lore}
             </p>
           ) : (
-            <p className="text-sm text-gray-300">ยังไม่มี lore — แก้ไขเพื่อเพิ่มเรื่องราวให้ตัวละครนี้</p>
+            <p className="text-sm text-gray-300">No lore available - Edit to add lore</p>
           )}
         </div>
 

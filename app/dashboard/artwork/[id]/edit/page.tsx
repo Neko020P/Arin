@@ -141,8 +141,8 @@ export default function EditArtworkPage() {
       <div className="max-w-lg mx-auto">
 
         <div className="mb-8">
-          <h1 className="text-2xl font-medium">แก้ไขผลงาน</h1>
-          <p className="text-sm text-gray-400 mt-1">แก้ไขรายละเอียดและ characters</p>
+          <h1 className="text-2xl font-medium">Edit Artwork</h1>
+          <p className="text-sm text-gray-400 mt-1">Edit details and characters</p>
         </div>
 
         {/* Preview รูปปัจจุบัน */}
