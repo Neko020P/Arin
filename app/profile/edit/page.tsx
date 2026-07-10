@@ -33,29 +33,53 @@ export default function EditProfilePage() {
   useEffect(() => {
     async function loadProfile() {
       console.log('loadProfile start')
-      const { data: { user } } = await supabase.auth.getUser()
-      console.log('user:', user)
-      if (!user) return router.push('/login')
 
-      const { data } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('user_id', user.id)
-        .single()
+      try {
+        const {
+          data: { user },
+          error: authError,
+        } = await supabase.auth.getUser()
 
-      console.log('profile data:', data, 'error:', error)
+        console.log('auth result:', { user, authError })
+        if (authError) {
+          console.error('Supabase auth getUser error:', authError)
+          setError('Unable to verify your session. Please login again.')
+          return router.push('/login')
+        }
 
-      if (data) {
-        setForm({
-          username: data.username ?? '',
-          display_name: data.display_name ?? '',
-          bio: data.bio ?? '',
-          avatar_url: data.avatar_url ?? '',
-          social_links: data.social_links?.length ? data.social_links : [''],
-        })
+        if (!user) {
+          return router.push('/login')
+        }
+
+        const { data, error: profileError } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('user_id', user.id)
+          .single()
+
+        console.log('profile result:', { data, profileError })
+
+        if (profileError) {
+          console.error('Supabase profile fetch error:', profileError)
+          setError('Unable to load your profile. Please try again.')
+          return
+        }
+
+        if (data) {
+          setForm({
+            username: data.username ?? '',
+            display_name: data.display_name ?? '',
+            bio: data.bio ?? '',
+            avatar_url: data.avatar_url ?? '',
+            social_links: data.social_links?.length ? data.social_links : [''],
+          })
+        }
+      } catch (caughtError) {
+        console.error('loadProfile exception:', caughtError)
+        setError('An unexpected error occurred while loading your profile.')
+      } finally {
+        setLoading(false)
       }
-
-      setLoading(false)
     }
 
     loadProfile()
