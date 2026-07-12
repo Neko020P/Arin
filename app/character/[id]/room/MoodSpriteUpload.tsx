@@ -20,10 +20,12 @@ export default function MoodSpriteUpload({ characterId, currentSprites, onUpdate
   const supabase = createClient()
   const [uploading, setUploading] = useState<string | null>(null)
   const [expanded, setExpanded] = useState(false)
+  const [error, setError] = useState('')
   const fileRefs = useRef<Record<string, HTMLInputElement | null>>({})
 
   async function uploadMoodSprite(mood: string, file: File) {
     setUploading(mood)
+    setError('')
 
     const ext  = file.name.split('.').pop()
     const path = `mood-sprites/${characterId}/${mood}.${ext}`
@@ -32,18 +34,27 @@ export default function MoodSpriteUpload({ characterId, currentSprites, onUpdate
       .from('character-parts')
       .upload(path, file, { upsert: true })
 
-    if (!upErr) {
-      const { data: { publicUrl } } = supabase.storage
-        .from('character-parts')
-        .getPublicUrl(path)
+    if (upErr) {
+      setError(`อัพโหลดไม่สำเร็จ: ${upErr.message}`)
+      setUploading(null)
+      return
+    }
 
-      const nextSprites = { ...currentSprites, [mood]: publicUrl + '?t=' + Date.now() }
+    const { data: { publicUrl } } = supabase.storage
+      .from('character-parts')
+      .getPublicUrl(path)
 
-      await supabase
-        .from('characters')
-        .update({ mood_sprites: nextSprites })
-        .eq('id', characterId)
+    const nextSprites = { ...currentSprites, [mood]: publicUrl + '?t=' + Date.now() }
 
+    const { error: dbErr } = await supabase
+      .from('characters')
+      .update({ mood_sprites: nextSprites })
+      .eq('id', characterId)
+
+    if (dbErr) {
+      // ไฟล์ถูกอัพโหลดไปแล้วแต่บันทึก URL ไม่สำเร็จ — แจ้งผู้ใช้แทนที่จะทำเนียนว่าสำเร็จ
+      setError(`บันทึกไม่สำเร็จ: ${dbErr.message}`)
+    } else {
       onUpdate(nextSprites)
     }
 
@@ -51,15 +62,20 @@ export default function MoodSpriteUpload({ characterId, currentSprites, onUpdate
   }
 
   async function removeMoodSprite(mood: string) {
+    setError('')
     const nextSprites = { ...currentSprites }
     delete nextSprites[mood]
 
-    await supabase
+    const { error: dbErr } = await supabase
       .from('characters')
       .update({ mood_sprites: nextSprites })
       .eq('id', characterId)
 
-    onUpdate(nextSprites)
+    if (dbErr) {
+      setError(`ลบไม่สำเร็จ: ${dbErr.message}`)
+    } else {
+      onUpdate(nextSprites)
+    }
   }
 
   return (
@@ -135,6 +151,7 @@ export default function MoodSpriteUpload({ characterId, currentSprites, onUpdate
           })}
         </div>
       )}
+      {error && <p className="text-xs text-red-400 mt-2">{error}</p>}
     </div>
   )
 }

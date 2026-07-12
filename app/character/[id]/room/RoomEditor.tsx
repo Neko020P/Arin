@@ -29,7 +29,6 @@ export default function RoomEditor({
   const [uploadingBg, setUploadingBg] = useState(false)
   const [uploadingSprite, setUploadingSprite] = useState(false)
   const [error, setError] = useState('')
-  const [bgColor, setBgColor] = useState(currentBgColor ?? '#302b63')
 
   async function uploadFile(
     file: File,
@@ -49,12 +48,6 @@ export default function RoomEditor({
     if (dbErr) setError(dbErr.message)
     else router.refresh()
     setLoading(false)
-  }
-
-  async function handleColorChange(color: string) {
-    setBgColor(color)
-    onBgColorChange(color)
-    await supabase.from('characters').update({ room_bg_color: color }).eq('id', characterId)
   }
 
   function downloadTemplate() {

@@ -26,13 +26,21 @@ type Props = {
 export default function BgColorPicker({ characterId, current, onChange }: Props) {
   const [selected, setSelected] = useState(current ?? PRESETS[0].value)
   const [open, setOpen] = useState(false)
+  const [error, setError] = useState('')
   const supabase = createClient()
 
   async function handleSelect(value: string) {
+    const previous = selected
     setSelected(value)
-    onChange(value)
     setOpen(false)
-    await supabase.from('characters').update({ room_bg_color: value }).eq('id', characterId)
+    setError('')
+    const { error: updateErr } = await supabase.from('characters').update({ room_bg_color: value }).eq('id', characterId)
+    if (updateErr) {
+      setError('บันทึกสีไม่สำเร็จ ลองใหม่อีกครั้ง')
+      setSelected(previous)   // roll back optimistic UI since the write failed
+    } else {
+      onChange(value)
+    }
   }
 
   return (
@@ -59,6 +67,7 @@ export default function BgColorPicker({ characterId, current, onChange }: Props)
           ))}
         </div>
       )}
+      {error && <p className="text-xs text-red-400 mt-1">{error}</p>}
     </div>
   )
 }

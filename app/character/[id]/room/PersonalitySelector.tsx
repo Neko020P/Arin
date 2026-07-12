@@ -12,14 +12,20 @@ type Props = {
 export default function PersonalitySelector({ characterId, current, onUpdate }: Props) {
   const supabase = createClient()
   const [saving, setSaving] = useState(false)
+  const [error, setError] = useState('')
 
   async function handleSelect(p: Personality) {
     setSaving(true)
-    await supabase
+    setError('')
+    const { error: updateErr } = await supabase
       .from('characters')
       .update({ personality: p })
       .eq('id', characterId)
-    onUpdate(p)
+    if (updateErr) {
+      setError('บันทึกไม่สำเร็จ ลองใหม่อีกครั้ง')
+    } else {
+      onUpdate(p)
+    }
     setSaving(false)
   }
 
@@ -46,6 +52,7 @@ export default function PersonalitySelector({ characterId, current, onUpdate }: 
           )
         )}
       </div>
+      {error && <p className="text-xs text-red-400 text-center mt-2">{error}</p>}
     </div>
   )
 }

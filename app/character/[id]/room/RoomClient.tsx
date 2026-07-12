@@ -108,6 +108,7 @@ export default function RoomClient({
   useEffect(() => { liveStatsRef.current = liveStats }, [liveStats])
 
   useEffect(() => {
+    if (!isOwner) return
     const interval = setInterval(() => {
       ;(async () => {
         const current = liveStatsRef.current
@@ -149,7 +150,7 @@ export default function RoomClient({
       })()
     }, 30000)
     return () => clearInterval(interval)
-  }, [characterId, supabase])
+  }, [characterId, supabase, isOwner])
 
   function updateLiveStats(next: Stats) {
     const now = new Date().toISOString()
@@ -201,6 +202,11 @@ export default function RoomClient({
   const [showSettings, setShowSettings] = useState(false)
   const [settingsTab, setSettingsTab] = useState<SettingsTab>('personality')
   const visitorTimeoutsRef = useRef<Record<string, ReturnType<typeof setTimeout>>>({})
+  const isMountedRef = useRef(true)
+  useEffect(() => {
+    isMountedRef.current = true
+    return () => { isMountedRef.current = false }
+  }, [])
 
   const avatarUrl = initialCharacter.room_sprite_url ?? initialCharacter.ref_sheet_url ?? null
 
@@ -245,9 +251,10 @@ export default function RoomClient({
           fresh.forEach((v: any) => {
             if (visitorTimeoutsRef.current[v.characterId]) clearTimeout(visitorTimeoutsRef.current[v.characterId])
             visitorTimeoutsRef.current[v.characterId] = setTimeout(() => {
-              setVisitors(p => p.filter(x => x.characterId !== v.characterId))
               delete visitorTimeoutsRef.current[v.characterId]
               createClient().from('character_visits').delete().eq('visitor_id', v.characterId).eq('host_id', characterId).then(() => { })
+              if (!isMountedRef.current) return
+              setVisitors(p => p.filter(x => x.characterId !== v.characterId))
             }, 10 * 60 * 1000)
           })
           return [...prev, ...fresh]
@@ -355,7 +362,16 @@ export default function RoomClient({
     return () => { if (prepTimerRef.current) clearTimeout(prepTimerRef.current) }
   }, [])
 
+  // ensure all pending visitor-departure timers are cleared on unmount
+  useEffect(() => {
+    return () => {
+      Object.values(visitorTimeoutsRef.current).forEach(clearTimeout)
+      visitorTimeoutsRef.current = {}
+    }
+  }, [])
+
   async function handleZoneMove(id: string, col: number, row: number) {
+    if (!isOwner) return
     setZones(prev => prev.map(z => z.id === id ? { ...z, col, row } : z))
     const { error } = await supabase.from('room_zones').update({ col, row }).eq('id', id)
     if (error) {
@@ -481,6 +497,7 @@ export default function RoomClient({
                 editMode={editMode} onEditModeChange={setEditMode}
                 preparingAction={preparingAction}
                 onTriggerAction={async (action: string) => {
+                  if (!isOwner) return
                   // onTriggerAction fires via onArrive — the character has already
                   // reached the zone. Write to DB immediately (no animation delay needed).
                   console.debug('[RoomClient] onTriggerAction CALLED for', action, 'liveStatsRef at call time', liveStatsRef.current)
@@ -611,7 +628,7 @@ export default function RoomClient({
           <ChatManager
             characterId={characterId}
             initialMessages={(initialCharacter.chat_messages as any[]) ?? []}
-            isOwner={false}
+            isOwner={isOwner}
             lastAction={pendingAction?.action ?? null}
             hasVisitor={visitors.length > 0}
             onTrigger={setChatText}
@@ -661,7 +678,7 @@ export default function RoomClient({
                 <ChatManager
                   characterId={characterId}
                   initialMessages={(initialCharacter.chat_messages as any[]) ?? []}
-                  isOwner={true}
+                  isOwner={isOwner}
                   lastAction={pendingAction?.action ?? null}
                   hasVisitor={visitors.length > 0}
                   onTrigger={setChatText}

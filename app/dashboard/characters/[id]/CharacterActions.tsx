@@ -56,7 +56,7 @@ export default function CharacterActions({
         href={`/dashboard/characters/${characterId}/edit`}
         className="border rounded-lg py-2.5 text-sm text-center hover:bg-gray-50 transition-colors"
       >
-        ✏️ Edit Character
+         Edit Character
       </Link>
       
       <Link

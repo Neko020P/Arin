@@ -54,7 +54,7 @@ export default function TransferOwnershipPanel({ characterId, characterName }: P
   return (
     <div className="relative">
       {/* Trigger button */}
-      {/* <button
+      <button
         onClick={() => setOpen(true)}
         className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors px-2 py-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-white/8"
       >
@@ -62,7 +62,7 @@ export default function TransferOwnershipPanel({ characterId, characterName }: P
           <path d="M18 8L22 12L18 16"/><path d="M2 12H22"/><path d="M6 16L2 12L6 8"/>
         </svg>
         Transfer Character
-      </button> */}
+      </button>
 
       {/* Modal */}
       {open && (
@@ -164,7 +164,7 @@ export default function TransferOwnershipPanel({ characterId, characterName }: P
                   onClick={handleClose}
                   className="w-full py-2.5 text-sm font-medium border border-gray-200 dark:border-white/10 rounded-xl text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
                 >
-                  ปิด
+                  close
                 </button>
               </>
             )}
