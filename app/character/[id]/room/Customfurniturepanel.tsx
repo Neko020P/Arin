@@ -50,21 +50,26 @@ export default function CustomFurniturePanel({ characterId, zones, onZonesChange
   const fileRef = useRef<HTMLInputElement>(null)
   const [uploading, setUploading] = useState(false)
   const [open, setOpen] = useState(false)
+  const [error, setError] = useState('')
 
   const customZones = zones.filter(z => z.zone_type.startsWith('custom'))
 
   async function handleUpload(file: File) {
-    if (customZones.length >= 5) return
+    setError('')
+    if (customZones.length >= 5) {
+      setError('เต็มแล้ว — ใส่เฟอร์นิเจอร์กำหนดเองได้สูงสุด 5 ชิ้น ลบชิ้นเก่าก่อนเพิ่มใหม่')
+      return
+    }
     setUploading(true)
     const ext = file.name.split('.').pop()
     const path = `rooms/${characterId}/custom-${Date.now()}.${ext}`
-    const { data: storage, error } = await supabase.storage.from('artworks').upload(path, file, { upsert: true })
-    if (error) { setUploading(false); return }
+    const { data: storage, error: uploadErr } = await supabase.storage.from('artworks').upload(path, file, { upsert: true })
+    if (uploadErr) { setError(uploadErr.message); setUploading(false); return }
     const { data: { publicUrl } } = supabase.storage.from('artworks').getPublicUrl(storage.path)
 
     const usedSlots = customZones.map(z => z.zone_type)
     const zoneType = ['custom_1','custom_2','custom_3','custom_4','custom_5'].find(s => !usedSlots.includes(s))
-    if (!zoneType) { setUploading(false); return }
+    if (!zoneType) { setError('เต็มแล้ว — ใส่เฟอร์นิเจอร์กำหนดเองได้สูงสุด 5 ชิ้น'); setUploading(false); return }
     const customData: CustomData = { ...DEFAULT_CUSTOM, label: file.name.replace(/\.[^/.]+$/, '') }
 
     const { data: newZone } = await supabase.from('room_zones')
@@ -119,6 +124,9 @@ export default function CustomFurniturePanel({ characterId, zones, onZonesChange
                 {uploading ? '⏳ Uploading...' : '+ Add Custom Furniture (PNG/WebP)'}
               </button>
             </>
+          )}
+          {error && (
+            <p className="text-xs text-red-400">{error}</p>
           )}
         </div>
       )}

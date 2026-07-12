@@ -131,7 +131,7 @@ export default async function ArtworkDetailPage({
                                         href={`/dashboard/artwork/${artwork.id}/edit`}
                                         className="text-xs border px-3 py-1.5 rounded-full hover:bg-gray-50 shrink-0 transition-colors"
                                     >
-                                        ✏️ Edit
+                                        Edit
                                     </Link>
                                 )}
                             </div>

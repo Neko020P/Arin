@@ -296,7 +296,7 @@ export default function ProfileTabs({ artworks, listings, portfolioItems: initia
                         {isOwner && !editingTos && (
                             <button onClick={() => { setTosInput(tos ?? ''); setEditingTos(true) }}
                                 className="text-xs border px-3 py-1.5 rounded-full hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
-                                ✏️ Edit TOS
+                                 Edit TOS
                             </button>
                         )}
                     </div>

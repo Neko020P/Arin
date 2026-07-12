@@ -24,6 +24,12 @@ export default function ChatManager({
     const timerRef = useRef<ReturnType<typeof setTimeout>>(undefined)
     const supabase = createClient()
 
+    // Keep a ref in sync with the latest messages so the effects below always
+    // read the current set — avoids stale-closure bubbles quoting old lines
+    // right after the owner edits and saves new chat messages.
+    const messagesRef = useRef(messages)
+    useEffect(() => { messagesRef.current = messages }, [messages])
+
     function pickRandom(msgs: ChatMessage[]) {
         if (!msgs.length) return null
         return msgs[Math.floor(Math.random() * msgs.length)].text
@@ -37,25 +43,25 @@ export default function ChatManager({
     useEffect(() => {
         if (!lastAction || lastAction === lastActionRef.current) return
         lastActionRef.current = lastAction
-        triggerBubble(messages)
+        triggerBubble(messagesRef.current)
     }, [lastAction])
 
     useEffect(() => {
         if (!hasVisitor) return
-        triggerBubble(messages)
+        triggerBubble(messagesRef.current)
     }, [hasVisitor])
 
     useEffect(() => {
         function schedule() {
             const delay = (5 + Math.random() * 10) * 1000
             return setTimeout(() => {
-                triggerBubble(messages)
+                triggerBubble(messagesRef.current)
                 timerRef.current = schedule()
             }, delay)
         }
         timerRef.current = schedule()
         return () => clearTimeout(timerRef.current)
-    }, [messages])
+    }, [])
 
     async function handleSave() {
         setSaving(true)

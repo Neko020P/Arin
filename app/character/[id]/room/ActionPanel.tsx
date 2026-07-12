@@ -118,6 +118,25 @@ export default function ActionPanel({
     if (isBusyRef.current) return
     isBusyRef.current = true
     setLoading(actionId)
+
+    // Server-side cooldown check — localStorage above is only for the UI
+    // countdown display. This RPC is the actual source of truth: it checks
+    // ownership and the real last-used timestamp stored in the DB, so
+    // clearing localStorage (or calling the API directly) can no longer
+    // bypass the cooldown.
+    const cooldownSeconds = customData ? 60 : (ACTIONS.find(a => a.id === actionId)?.cooldown ?? 60)
+    const { data: allowed, error: cooldownErr } = await supabase.rpc('check_and_set_action_cooldown', {
+      p_character_id: characterId,
+      p_action: actionId,
+      p_cooldown_seconds: cooldownSeconds,
+    })
+
+    if (cooldownErr || !allowed) {
+      setLoading(null)
+      isBusyRef.current = false
+      return
+    }
+
     onTriggerAction(actionId)
 
     // optimistic: บันทึกเวลาใช้งานทันทีเพื่อป้องกัน UI ค้างถ้า network ช้า
